@@ -1,3 +1,6 @@
-x = 1
-x += 2
-print(x)
+def main():
+    print("Starting...")
+
+
+if __name__ == "__main__":
+    main()
