@@ -1,11 +1,19 @@
 import numpy as np
 
 from business.problem import Problem
+from drawing.draw import draw_map
+from solver import classic
 
 
 def main():
     print("Starting...")
-    build_problem_1()
+
+    # Build and draw problem 1
+    p1 = build_problem_1()
+    draw_map(p1.warehouses, p1.customers)
+
+    # Solve with classic method
+    classic.solve(p1)
 
 
 def build_problem_1():
