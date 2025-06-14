@@ -90,7 +90,7 @@ def draw_map(
                 # )
 
     # Add legend
-    plt.legend(loc="upper right")
+    plt.legend(loc="upper right", bbox_to_anchor=(1.05, 1), borderaxespad=0.0)
     plt.grid(True)
     ax = plt.gca()  # get current axes
     ax.set_axisbelow(True)  # put grid behind plot elements
