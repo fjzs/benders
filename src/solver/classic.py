@@ -29,10 +29,8 @@ class FullModel(Solver):
         self.model.update()
 
         ## Now print the constraints
-        for c in self.model.getConstrs():
-            print(f"{c.ConstrName}: {self.model.getRow(c)} {c.Sense} {c.RHS}")
-        for v in self.model.getVars():
-            print(v)
+        # for c in self.model.getConstrs():
+        #     print(f"{c.ConstrName}: {self.model.getRow(c)} {c.Sense} {c.RHS}")
 
     def solve(self):
         self.model.optimize()
@@ -111,3 +109,19 @@ class FullModel(Solver):
         self.model.setObjective(
             self.z_cost_location + self.z_cost_transport, GRB.MINIMIZE
         )
+
+    def get_solution_flow(self) -> np.ndarray:
+        """Gets the flow used in the solution
+
+        Returns:
+            np.ndarray: [Warehouses, Customers]
+        """
+        return np.array(self.x.X)
+
+    def get_solution_warehouses(self) -> np.ndarray:
+        """Gets the warehouses opened
+
+        Returns:
+            np.ndarray: [Warehouses]
+        """
+        return np.array(self.y.X).astype(bool)
