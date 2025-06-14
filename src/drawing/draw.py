@@ -28,4 +28,5 @@ def draw_map(warehouses: np.ndarray, customers: np.ndarray):
     plt.legend()
     plt.grid(True)
     plt.axis("equal")  # Keep aspect ratio square
+    plt.savefig("map.svg")
     plt.show()

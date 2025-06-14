@@ -3,66 +3,111 @@ import numpy as np
 from gurobipy import GRB
 
 from business.problem import Problem
+from solver.solver import Solver
 
 
-def solve(problem: Problem):
-    model = __build_model(problem)
+class FullModel(Solver):
 
+    def __init__(self, problem: Problem):
+        self.problem = problem
+        self.model = gp.Model("network_design")
+        # Variables
+        self.x = self.__set_transportation_variable()
+        self.y = self.__set_warehouse_opening_variable()
+        # Objective function elements
+        self.z_cost_transport = self.__set_cost_transport()
+        self.z_cost_location = self.__set_cost_location()
+        # Business constraints
+        self.__constraint_satisfy_demand()
+        self.__constraint_warehouse_capacity()
+        # Objective constraints
+        self.__constraint_cost_transport()
+        self.__constraint_cost_location()
+        # Objective function
+        self.__set_objective_function()
+        # Update the model in the end to add everything
+        self.model.update()
 
-def __build_model(problem: Problem):
-    model = gp.Model("network_design")
-    num_warehouses = len(problem.warehouses)
-    num_customers = len(problem.customers)
+        ## Now print the constraints
+        for c in self.model.getConstrs():
+            print(f"{c.ConstrName}: {self.model.getRow(c)} {c.Sense} {c.RHS}")
+        for v in self.model.getVars():
+            print(v)
 
-    # Variables
-    x = model.addMVar(
-        shape=(num_warehouses, num_customers),
-        vtype=GRB.CONTINUOUS,
-        lb=0,
-        ub=9999,
-        name="x",
-    )
-    y = model.addMVar(shape=(num_warehouses), vtype=GRB.BINARY, name="y")
+    def solve(self):
+        self.model.optimize()
+        if self.model.Status == gp.GRB.INFEASIBLE:
+            self.model.computeIIS()
+            self.model.write("model.ilp")
 
-    # Constraints
-    __constraint_satisfy_demand(problem, x, model)
-    __constraint_capacity(problem, x, y, model)
+    def __set_transportation_variable(self):
+        var = self.model.addMVar(
+            shape=(self.problem.get_num_warehouses(), self.problem.get_num_customers()),
+            vtype=GRB.CONTINUOUS,
+            lb=0,
+            ub=np.inf,
+            name="x",
+        )
+        return var
 
-    # Objective function
-    __set_objective_function(problem, x, y, model)
-
-
-def __constraint_satisfy_demand(problem: Problem, x: gp.MVar, model: gp.Model):
-    """Every customer has to receive all the demand
-
-    Args:
-        problem (Problem):
-        x (gp.Var):
-        model (gp.Model):
-    """
-    customers = range(len(problem.customers))
-    warehouses = range(len(problem.warehouses))
-
-    for j in customers:
-        model.addConstr(
-            sum(x[i, j] for i in warehouses) >= problem.demand[j], f"demand_{j}"
+    def __set_warehouse_opening_variable(self):
+        return self.model.addMVar(
+            shape=self.problem.get_num_warehouses(), vtype=GRB.BINARY, name="y"
         )
 
+    def __set_cost_transport(self):
+        return self.model.addVar(
+            vtype=GRB.CONTINUOUS, lb=0, ub=np.inf, name="cost_transport"
+        )
 
-def __constraint_capacity(problem: Problem, x: gp.MVar, y: gp.MVar, model: gp.Model):
-    """Each warehouse can send a maximum if its open
+    def __set_cost_location(self):
+        return self.model.addVar(
+            vtype=GRB.CONTINUOUS, lb=0, ub=np.inf, name="cost_location"
+        )
 
-    Args:
-        problem (Problem): _description_
-        x (gp.MVar): _description_
-        y (gp.MVar): _description_
-        model (gp.Model): _description_
-    """
-    customers = range(len(problem.customers))
-    warehouses = range(len(problem.warehouses))
+    def __constraint_satisfy_demand(self):
+        """Every customer has to receive all the demand"""
+        customers = self.problem.get_customer_ids()
+        warehouses = self.problem.get_warehouse_ids()
+        for j in customers:
+            self.model.addConstr(
+                sum(self.x[i, j] for i in warehouses) >= self.problem.demand[j],
+                name=f"demand_{j}",
+            )
 
-    for i in warehouses:
-        model.addConstr(
-            sum(x[i, j] for j in customers) <= y[i] * problem.capacity[i],
-            f"capacity_{i}",
+    def __constraint_warehouse_capacity(self):
+        """Each warehouse can send its capacity as maximum if its open"""
+        customers = self.problem.get_customer_ids()
+        warehouses = self.problem.get_warehouse_ids()
+        for i in warehouses:
+            self.model.addConstr(
+                sum(self.x[i, j] for j in customers)
+                <= self.y[i] * self.problem.capacity[i],
+                f"capacity_{i}",
+            )
+
+    def __constraint_cost_transport(self):
+        warehouses = self.problem.get_warehouse_ids()
+        customers = self.problem.get_customer_ids()
+        self.model.addConstr(
+            self.z_cost_transport
+            == gp.quicksum(
+                self.x[i, j] * self.problem.shipping_cost[i, j]
+                for i in warehouses
+                for j in customers
+            ),
+            name="constraint_cost_transportation",
+        )
+
+    def __constraint_cost_location(self):
+        warehouses = self.problem.get_warehouse_ids()
+        self.model.addConstr(
+            self.z_cost_location
+            == gp.quicksum(self.y[i] * self.problem.fixed_cost[i] for i in warehouses),
+            name="constraint_cost_location",
+        )
+
+    def __set_objective_function(self):
+        self.model.setObjective(
+            self.z_cost_location + self.z_cost_transport, GRB.MINIMIZE
         )
