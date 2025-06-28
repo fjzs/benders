@@ -95,4 +95,4 @@ def draw_map(
     ax = plt.gca()  # get current axes
     ax.set_axisbelow(True)  # put grid behind plot elements
     plt.axis("equal")  # Keep aspect ratio square
-    plt.savefig("map.svg")
+    plt.savefig(".\..\map.svg")

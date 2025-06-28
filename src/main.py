@@ -2,7 +2,7 @@ import numpy as np
 
 from business.problem import Problem
 from drawing.draw import draw_map
-from solver.classic import FullModel
+from solver.benders import BendersCoordinator
 
 
 def main():
@@ -12,16 +12,16 @@ def main():
     problem.print()
     draw_map(problem.warehouses_location, problem.customers_location)
 
-    # Solve with classic method
-    fullModel = FullModel(problem)
-    fullModel.solve()
+    # Solve with some method
+    solver = BendersCoordinator(problem)
+    solver.solve()
 
     # Retrieve solution and draw it
-    flow = fullModel.get_solution_flow()
-    # print(flow)
-    facilities = fullModel.get_solution_warehouses()
-    # print(facilities)
-    draw_map(problem.warehouses_location, problem.customers_location, flow, facilities)
+    # flow = fullModel.get_solution_flow()
+    # # print(flow)
+    # facilities = fullModel.get_solution_warehouses()
+    # # print(facilities)
+    # draw_map(problem.warehouses_location, problem.customers_location, flow, facilities)
 
 
 def build_problem_0():
