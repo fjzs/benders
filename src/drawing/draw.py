@@ -21,7 +21,7 @@ def draw_map(
     plt.figure(figsize=(8, 6))
 
     # Plot customers: blue circles
-    plt.scatter(cust_x, cust_y, color="blue", marker="o", s=50, label="Customers")
+    plt.scatter(cust_x, cust_y, color="blue", marker="o", s=30, label="Customers")
 
     # Plot warehouses: red squares
     selected = np.array([0] * len(warehouses))
@@ -33,19 +33,19 @@ def draw_map(
         ware_y,
         color="red",
         marker="s",
-        s=150,
+        s=100,
         label="Warehouses",
         edgecolors="none",
     )
-    # Overlay selected warehouses with no fill and a thick blue border
+    # Overlay selected warehouses with no fill and a thick border
     plt.scatter(
         ware_x[selected],
         ware_y[selected],
         facecolors="none",
         edgecolors="black",
         marker="s",
-        s=150,
-        linewidths=4,
+        s=100,
+        linewidths=3,
     )
 
     # Add titles and labels

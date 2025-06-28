@@ -73,10 +73,10 @@ def build_problem_1():
 
 def build_problem_2():
     n = 10
-    warehouses = np.random.uniform(0, 100, size=(n, 2))
-    m = 100
-    customers = np.random.uniform(0, 100, size=(m, 2))
-    fixed_costs = np.random.uniform(50000, size=(m,))
+    warehouses = np.random.uniform(0, 1000, size=(n, 2))
+    m = 150
+    customers = np.random.uniform(0, 1000, size=(m, 2))
+    fixed_costs = np.random.uniform(100000, size=(m,))
     shipping_cost = np.zeros((len(warehouses), len(customers)))
     for i in range(len(warehouses)):
         wi = warehouses[i]
