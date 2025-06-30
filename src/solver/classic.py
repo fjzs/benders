@@ -2,11 +2,10 @@ import gurobipy as gp
 import numpy as np
 from gurobipy import GRB
 
-from business.problem import Problem
-from solver.solver import Solver
+from src.business.problem import Problem
 
 
-class FullModel(Solver):
+class FullModel:
 
     def __init__(self, problem: Problem):
         self.problem = problem

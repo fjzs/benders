@@ -2,26 +2,36 @@ import numpy as np
 
 from business.problem import Problem
 from drawing.draw import draw_map
-from solver.benders import BendersCoordinator
+from solver.classic import FullModel
 
 
 def main():
-
     # Build and draw problem
     problem = build_problem_2()
     problem.print()
     draw_map(problem.warehouses_location, problem.customers_location)
 
+    # Select a technique
+    use_benders(problem)
+
+
+def use_full_model(problem: Problem):
     # Solve with some method
-    solver = BendersCoordinator(problem)
+    solver = FullModel(problem)
     solver.solve()
 
     # Retrieve solution and draw it
-    # flow = fullModel.get_solution_flow()
-    # # print(flow)
-    # facilities = fullModel.get_solution_warehouses()
-    # # print(facilities)
-    # draw_map(problem.warehouses_location, problem.customers_location, flow, facilities)
+    flow = solver.get_solution_flow()
+    # print(flow)
+    facilities = solver.get_solution_warehouses()
+    # print(facilities)
+    draw_map(problem.warehouses_location, problem.customers_location, flow, facilities)
+
+
+def use_benders(problem: Problem):
+    """
+    Uses benders decomposition to solve the problem and draws the solution as it evolves
+    """
 
 
 def build_problem_0():

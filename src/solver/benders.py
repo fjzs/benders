@@ -1,10 +1,9 @@
-from business.problem import Problem
-from solver.master import MasterProblem
-from solver.solver import Solver
-from solver.subproblem import SubProblem
+from src.business.problem import Problem
+from src.solver.master import MasterProblem
+from src.solver.subproblem import SubProblem
 
 
-class BendersCoordinator(Solver):
+class BendersCoordinator:
 
     def __init__(self, problem: Problem):
         self.problem = problem
@@ -12,7 +11,7 @@ class BendersCoordinator(Solver):
         self.subproblem = SubProblem(problem)
 
     def solve(self):
-        # Solve the master problem
+
         self.master.solve()
 
     def get_solution_flow(self):
